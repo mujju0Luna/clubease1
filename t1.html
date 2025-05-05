@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Portal</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <style>body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f5f9ff;
+    color: #333;
+  }
+  
+  header {
+    background-color: #ffffff;
+    padding: 20px 40px;
+    border-bottom: 1px solid #ddd;
+    text-align: center;
+  }
+  
+  header h1 {
+    margin: 0;
+    font-size: 32px;
+    color: #2a66ff;
+  }
+  
+  header p {
+    margin-top: 8px;
+    font-size: 16px;
+    color: #666;
+  }
+  
+  .section {
+    padding: 40px 20px;
+    max-width: 1200px;
+    margin: auto;
+  }
+  
+  .section h2 {
+    font-size: 22px;
+    margin-bottom: 30px;
+    color: #222;
+    text-align: center;
+  }
+  
+  .event-grid, .clubs-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 24px;
+  }
+  
+  .event-card, .club-card {
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    padding: 16px;
+    width: 260px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: transform 0.2s ease;
+  }
+  
+  .event-card:hover, .club-card:hover {
+    transform: translateY(-4px);
+  }
+  
+  .event-card img, .club-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 12px;
+  }
+  
+  .event-card h3, .club-card h3 {
+    margin: 0 0 10px;
+    font-size: 18px;
+    color: #1f3b73;
+    text-align: center;
+  }
+  
+  .event-card p, .club-card p {
+    font-size: 14px;
+    color: #555;
+    margin-bottom: 6px;
+    text-align: center;
+  }
+  
+  .register-btn {
+    margin-top: auto;
+    padding: 10px 18px;
+    background-color: #2a66ff;
+    color: #fff;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    text-align: center;
+  }
+  
+  .register-btn:hover {
+    background-color: #1e4ed8;
+  }
+  
+  .register-btn.closed {
+    background-color: #dc3545;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+  
+  @media (max-width: 768px) {
+    .event-card, .club-card {
+      width: 90%;
+    }
+  
+    .section {
+      padding: 30px 10px;
+    }
+  }
+  
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Student Portal</h1>
+    <p>Browse clubs and upcoming events</p>
+  </header>
+
+  <div class="section">
+    <h2>📅 Upcoming Events</h2>
+    <div class="event-grid" id="upcomming-events-container">
+      <!-- Events will be loaded here dynamically -->
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Available Clubs</h2>
+    <div class="clubs-grid" id="clubs-container">
+
+    </div>
+  </div>
+
+  <script>
+    window.addEventListener('DOMContentLoaded', async () => {
+        const SUPABASE_URL = 'https://iwljoaqkdccamkrmexnq.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3bGpvYXFrZGNjYW1rcm1leG5xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM4NjExNjEsImV4cCI6MjA1OTQzNzE2MX0.Me8m_zbDoClF_iq4WPW8DVE_OKkTyhdnttys1L2ibZI';
+        const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  
+        const { data, error } = await client
+          .from('upcoming_event') // ✅ double check spelling
+          .select('*')
+          .order('date', { ascending: false });
+  
+        if (error) {
+          console.error('Error loading events:', error);
+          return;
+        }
+  
+        const container = document.getElementById('upcomming-events-container');
+        data.forEach(event => {
+          const card = document.createElement('div');
+          card.className = 'event-card';
+          card.innerHTML = `
+            <img src="${event.photo_url}" alt="${event.name}">
+            <h3>${event.name}</h3>
+            <p>${event.description}</p>
+            <p><strong>Date:</strong> ${event.date}</p>
+            <p><strong>Venue:</strong> ${event.venue}</p>
+            <a href="${event.registration_link}" class="register-btn" target="_blank">Registration Link</a>
+         
+            `;
+          container.appendChild(card);
+
+          
+        });
+
+
+      });
+
+      window.addEventListener('DOMContentLoaded', async () => {
+        const SUPABASE_URL = 'https://iwljoaqkdccamkrmexnq.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3bGpvYXFrZGNjYW1rcm1leG5xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM4NjExNjEsImV4cCI6MjA1OTQzNzE2MX0.Me8m_zbDoClF_iq4WPW8DVE_OKkTyhdnttys1L2ibZI';
+        const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        
+        const { data, error } = await client
+          .from('clubs') // ✅ double check spelling
+          .select('*')
+  
+        if (error) {
+          console.error('Error loading events:', error);
+          return;
+        }
+  
+        const container = document.getElementById('clubs-container');
+        data.forEach(clubs => {
+          const card = document.createElement('div');
+          card.className = 'club-card';
+          const isOpen = clubs.registrationStatus;
+          const btnClass = isOpen ? 'register-btn' : 'register-btn closed';
+          const btnText = isOpen ? 'Register Now' : 'Registration Closed';
+          const btnStyle = isOpen ? 'background-color:#28a745' : 'background-color:#dc3545; cursor: not-allowed; pointer-events: none';
+    
+          card.innerHTML = `
+            <img src="${clubs.logo_url}" alt="${clubs.name}">
+            <h3>${clubs.name}</h3>
+            <p><strong>Faculty Coordinator:</strong> ${clubs.facultyCoordinator}</p>
+            <p>${clubs.description}</p>
+            <p><strong>No. of Members:</strong> ${clubs.noOfMembers}</p>
+            <p><strong>Events Conducted:</strong> ${clubs.noOfEvents}</p>
+
+            <a class="register-btn" href="${isOpen ? clubs.registrationLink : '#'}" style="${btnStyle}" ${isOpen ? 'target="_blank"' : ''}>${btnText}</a>
+         
+            `;
+          container.appendChild(card);
+
+          
+        });
+      });
+  </script>
+
+
+</body>
+</html>

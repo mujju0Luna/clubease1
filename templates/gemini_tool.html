@@ -1,0 +1,31 @@
+<h3 style="color: #2a66ff;">Gemini File Analysis</h3>
+<form method="POST" enctype="multipart/form-data"
+      style="padding: 20px; border: 1px solid #2a66ff; border-radius: 10px; background-color: #f9f9ff;">
+  <label style="font-weight: bold; color: #2a66ff;">Upload CSV or Excel:</label><br>
+  <input type="file" name="file" required><br><br>
+
+  <label style="font-weight: bold; color: #2a66ff;">Ask a Question:</label><br>
+  <textarea name="prompt" rows="4" cols="60" required></textarea><br><br>
+
+  <button type="submit" style="background-color: #2a66ff; color: white; padding: 10px 20px; border: none; border-radius: 5px;">
+    Submit
+  </button>
+</form>
+
+
+
+{% if gemini_result %}
+  <div style="margin-top: 20px; border: 1px solid #2a66ff; padding: 15px; background-color: #eef3ff; border-radius: 10px;">
+    <h4 style="color: #2a66ff;">Gemini Response:</h4>
+    <pre>{{ gemini_result }}</pre>
+
+    <!-- PDF Download Form -->
+    <form method="POST" action="/download_pdf">
+      <input type="hidden" name="response_text" value="{{ gemini_result }}">
+      <button type="submit"
+              style="margin-top: 10px; background-color: #2a66ff; color: white; padding: 8px 16px; border: none; border-radius: 5px;">
+        Download as PDF
+      </button>
+    </form>
+  </div>
+{% endif %}

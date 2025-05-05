@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ClubEase - Login</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #e6f2ff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    form {
+      background: white;
+      padding: 20px 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    input, button {
+      display: block;
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      font-size: 14px;
+    }
+    button {
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    h2 {
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <form id="login-form">
+    <h2>ClubEase - Login</h2>
+    <input type="email" id="email" placeholder="Email" required>
+    <input type="password" id="password" placeholder="Password" required>
+    <button type="submit">Login</button>
+    <a href="signup.html">Sign Up</a>
+  </form>
+
+  <!-- Supabase Script -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script>
+    const SUPABASE_URL = "https://iwljoaqkdccamkrmexnq.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3bGpvYXFrZGNjYW1rcm1leG5xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM4NjExNjEsImV4cCI6MjA1OTQzNzE2MX0.Me8m_zbDoClF_iq4WPW8DVE_OKkTyhdnttys1L2ibZI";
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    document.getElementById('login-form').addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+
+      // Query users table directly
+      const { data: userData, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('email', email)
+        .eq('password', password)
+        .single();
+
+      if (error || !userData) {
+        alert('Invalid email or password.');
+        return;
+      }
+
+      if (userData.status !== 'approved') {
+        alert('Your account is not yet approved by the club president.');
+        return;
+      }
+
+      // Redirect based on role
+      if (userData.role === 'president' || userData.role === 'faculty') {
+        window.location.href = 'club_admin_home.html';
+      } else {
+        window.location.href = 'club_member_home.html';
+      }
+    });
+  </script>
+</body>
+</html>

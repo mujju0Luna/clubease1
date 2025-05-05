@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Previous Events</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <style>
+    .event-card {
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      margin: 1rem;
+      padding: 1rem;
+    }
+    .event-card img {
+      max-width: 100%;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Previous Events</h1>
+  <div id="previous-events-container"></div>
+
+  <script>
+    const SUPABASE_URL = 'https://YOUR_PROJECT.supabase.co';
+    const SUPABASE_KEY = 'YOUR_PUBLIC_ANON_KEY';
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    async function loadPreviousEvents() {
+      const { data, error } = await supabase
+        .from('previous_events')
+        .select('*')
+        .order('date', { ascending: false });
+
+      if (error) {
+        console.error('Error loading previous events:', error);
+        return;
+      }
+
+      const container = document.getElementById('previous-events-container');
+      data.forEach(event => {
+        const card = document.createElement('div');
+        card.className = 'event-card';
+        card.innerHTML = `
+          <img src="${event.photo_url}" alt="${event.name}">
+          <h2>${event.name}</h2>
+          <p>${event.description}</p>
+          <p><strong>Date:</strong> ${event.date}</p>
+          <p><strong>Venue:</strong> ${event.venue}</p>
+          <a href="${event.reistration_link}" target="_blank">Registration Link</a>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    loadPreviousEvents();
+  </script>
+</body>
+</html>

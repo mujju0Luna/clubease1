@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ClubEase - Admin Panel</title>
+  <style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f8fc;
+        margin: 0;
+        padding: 20px;
+      }
+    .calendar-section {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        margin-top: 20px;
+        display: none;
+    }
+  
+      h1 {
+        font-size: 24px;
+        color: #333;
+      }
+  
+  
+      .tabs {
+        display: flex;
+        gap: 15px;
+        margin: 20px 0;
+        border-bottom: 1px solid #ccc;
+        padding-bottom: 10px;
+      }
+  
+  
+      .tabs button {
+        background: none;
+        border: none;
+        font-size: 16px;
+        cursor: pointer;
+        color: #2a66ff;
+      }
+  
+  
+      .section {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        margin-top: 20px;
+        display: none;
+      }
+  
+  
+      .section input,
+      .section textarea,
+      .section select {
+        width: 100%;
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+      }
+  
+  
+      .section button {
+        padding: 10px 20px;
+        background-color: #2a66ff;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+      }
+  
+  
+      .event-card, .student-card {
+        border: 1px solid #ccc;
+        padding: 15px;
+        border-radius: 10px;
+        margin-top: 10px;
+        background-color: #fff;
+      }
+  
+  
+      .event-card a {
+        color: #2a66ff;
+        text-decoration: underline;
+      }
+    .user-card {
+      background: white;
+      padding: 15px;
+      margin: 10px auto;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      width: 90%;
+      max-width: 500px;
+    }
+    .user-card p {
+      margin: 5px 0;
+    }
+    .actions {
+      margin-top: 10px;
+    }
+    .actions button {
+      margin-right: 10px;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .approve { background-color: #4CAF50; color: white; }
+    .reject { background-color: #f44336; color: white; }
+    .admin { background-color: #2196F3; color: white; }
+    #logout {
+      position: fixed;
+      top: 15px;
+      right: 20px;
+      background: #555;
+      color: white;
+    }
+    #calendarSection {
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 30px;
+      background-color: #f9f9ff;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      font-family: 'Segoe UI', sans-serif;
+    }
+    
+    #calendarSection h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #2a66ff;
+    }
+    
+    #calendarSection form {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    
+    #calendarSection input[type="text"],
+    #calendarSection input[type="date"] {
+      padding: 10px 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 16px;
+    }
+    
+    #calendarSection button[type="submit"] {
+      padding: 12px;
+      background-color: #2a66ff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    
+    #calendarSection button[type="submit"]:hover {
+      background-color: #1d4ed8;
+    }
+    
+
+    .booking-requests {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 20px;
+      margin-top: 30px;
+    }
+    
+    .request-group {
+      background-color: #f1f5ff;
+      border-radius: 10px;
+      padding: 15px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    }
+    
+    .request-group h3 {
+      margin-top: 0;
+      color: #2a66ff;
+      font-size: 18px;
+      margin-bottom: 12px;
+    }
+    
+    .request-card {
+      background-color: #fff;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 6px;
+      border-left: 4px solid #2a66ff;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+    .request-card strong {
+      font-size: 15px;
+    }
+
+    
+  form#bookingForm {
+    display: flex;
+    flex-direction: column;
+    max-width: 400px;
+    gap: 10px;
+    margin: 20px auto;
+    padding: 15px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+  }
+  form#bookingForm input,
+  form#bookingForm select,
+  form#bookingForm button {
+    padding: 10px;
+    font-size: 1rem;
+  }
+  #bookingMsg {
+    text-align: center;
+    margin-top: 10px;
+    font-weight: bold;
+  }
+        
+  </style>
+  
+  <script>
+    function showSection(sectionId) {
+      const sections = ['formSection','calendarSection', 'requestSection','eventListSection', 'studentSection'];
+      sections.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+      });
+      document.getElementById(sectionId).style.display = 'block';
+    }
+
+
+    window.onload = function() {
+      showSection('formSection');
+    }
+
+</script>
+</head>
+<body>
+
+  <h1>ClubEase Admin - Approve Members</h1>
+  <button id="logout" onclick="logout()">Logout</button>
+  <div id="pending-users"></div>
+  <div class="tabs">
+    <button onclick="showSection('formSection')" >🗓️ Plan Events</button>
+
+    <button onclick="showSection('studentSection')">👥 Students</button>
+    <button onclick="alert('Roles section coming soon!')">🧑‍💼 Roles</button>
+    <button onclick="showSection('calendarSection')">🏛️ Book Auditorium</button>
+  </div>
+
+  <div id="calendarSection" class="calendar-section" class="section">
+    <h2>Update Approved Auditorium Booking</h2>
+    <form id="bookingForm" onsubmit="handleBookingSubmit(event)">
+      
+  <input type="text" id="title" placeholder="Event Title" required />
+  <input type="date" id="requested_date" required />
+  <input type="text" id="venue" placeholder="Venue" required />
+  
+  <label for="m_or_a">Time Slot:</label>
+  <select id="m_or_a" required>
+    <option value="true">Morning 🌅</option>
+    <option value="false">Afternoon 🌇</option>
+  </select>
+  
+  <input type="text" id="club_name_var" placeholder="Club Name" required />
+
+  <button type="submit">Submit Booking Request</button>
+    </form>
+
+    <h3>📋 Booking Requests</h3>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
+  <div><h4>⏳ Pending</h4><div id="booking-pending"></div></div>
+  <div><h4>✅ Approved</h4><div id="booking-approved"></div></div>
+  <div><h4>❌ Rejected</h4><div id="booking-rejected"></div></div>
+  <div><h4>⌛ Expired</h4><div id="booking-expired"></div></div>
+</div>
+
+<!--     <hr style="margin: 40px 0;">
+
+<h2>📋 Booking Requests Overview</h2>
+
+<div class="booking-requests">
+  <div class="request-card">
+    <strong>Team Alpha</strong><br>
+    📅 Jan 25, 2025 - Main Hall<br>
+    ⏱️ Requested: 2025-01-05 14:30
+    ⏳ Pending
+  </div>
+  
+
+  <div class="request-card">
+    <strong>Art Society</strong><br>
+    📅 Jan 10, 2025 - Studio Room<br>
+    ⏱️ Requested: 2024-12-20 10:15<br>
+    🟢 Approved: 2024-12-22 09:00
+  </div>
+  
+
+  <div class="request-group rejected">
+    <h3>❌ Rejected</h3>
+    <div class="request-card">Drama Club - Jan 12, 2025 at Seminar Hall</div>
+  </div>
+
+  <div class="request-group expired">
+    <h3>⌛ Expired</h3>
+    <div class="request-card">Photography Club - Dec 10, 2024 at Main Hall</div>
+  </div>
+</div>
+
+ -->
+
+ <div id="bookingsContainer"></div>
+ 
+  </div>
+  <!-- Event Form Section -->
+  <!-- Event Form Section -->
+<div id="formSection" class="section">
+  <h2>Request SAC Approval</h2>
+  <form id="eventForm">
+    
+    <input type="text" name="club_name" placeholder="club Name" required>
+    <input type="text" name="event_name" placeholder="Event Name" required>
+    <textarea name="event_description" placeholder="Event Description" rows="4" required></textarea>
+    <select name="event_type" required>
+      <option value="">Select Event Type</option>
+      <option value="Workshop">Workshop</option>
+      <option value="Competition">Competition</option>
+      <option value="Talk">Talk</option>
+      <option value="Seminar">Seminar</option>
+      <option value="Other">Other</option>
+    </select>
+    <input type="text" name="venue" placeholder="Venue/Location" required>
+    <input type="url" name="form_link" placeholder="Registration Form Link (Google Form)" required>
+    <input type="url" name="poster_link" placeholder="Poster/Banner Image Link" required>
+    <input type="date" name="event_date" required>
+    <input type="text" name="participants" placeholder="Expected Participants" required>
+    <input type="text" name="resources" placeholder="Required Resources" required>
+    <button type="submit">Submit to SAC</button>
+    
+  <!-- Event Requests Display Section -->
+<div id="requestSection" class="section">
+  <h2>All Event Requests</h2>
+  <div id="eventList"></div>
+</div>
+  </form>
+
+</div>
+
+
+
+  <!-- Upcoming Events Section -->
+  <div id="eventListSection" class="section">
+    <h2>Upcoming Events</h2>
+    <button style="margin-bottom: 10px; background-color: #2a66ff; color: white; padding: 8px 12px; border: none; border-radius: 6px;">+ Create New Event</button>
+    <div class="event-card">
+      <strong>Annual Photography Exhibition</strong><br>
+      Date: March 15, 2025<br>
+      Location: Main Hall<br>
+      <a href="#">Registration Link</a>
+    </div>
+  </div>
+
+
+  <!-- Example student section -->
+<div id="studentSection" class="section" style="padding: 20px; font-family: Arial, sans-serif;">
+
+  <h2 style="color: #2a66ff;">Gemini File Analysis</h2>
+  <iframe src="gemini" width="100%" height="600px" style="border: 2px solid #2a66ff; border-radius: 10px;"></iframe>
+
+
+</div>
+
+
+
+  <!-- Supabase Script -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script>
+    const supabase1 = supabase.createClient(
+      'https://iwljoaqkdccamkrmexnq.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3bGpvYXFrZGNjYW1rcm1leG5xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM4NjExNjEsImV4cCI6MjA1OTQzNzE2MX0.Me8m_zbDoClF_iq4WPW8DVE_OKkTyhdnttys1L2ibZI'
+    );
+    
+
+    document.getElementById('eventForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const form = e.target;
+      const formData = {
+        club_name: form.club_name.value,
+        event_name: form.event_name.value,
+        event_description: form.event_description.value,
+        event_type: form.event_type.value,
+        venue: form.venue.value,
+        form_link: form.form_link.value,
+        poster_link: form.poster_link.value,
+        event_date: form.event_date.value,
+        participants: form.participants.value,
+        resources: form.resources.value,
+        status: 'pending', // default status
+      };
+  
+      const { data, error } = await supabase1
+        .from('events')
+        .insert([formData]);
+  
+      if (error) {
+        alert('Error submitting event: ' + error.message);
+        console.error(error);
+      } else {
+        alert('Event submitted successfully for SAC approval!');
+        form.reset();
+      }
+    });
+
+    async function fetchEventRequests() {
+      const { data: events, error } = await supabase1
+        .from('events')
+        .select('*')
+        .order('event_date', { ascending: true });
+    
+      if (error) {
+        console.error('Error fetching events:', error);
+        document.getElementById('eventList').innerHTML = '<p>Error loading events.</p>';
+        return;
+      }
+    
+      if (!events || events.length === 0) {
+        document.getElementById('eventList').innerHTML = '<p>No event requests found.</p>';
+        return;
+      }
+    
+      const emojiMap = {
+        pending: '⏳',
+        approved: '✅',
+        rejected: '❌',
+        retrieved: '📦'
+      };
+    
+      const listHtml = await Promise.all(events.map(async (event) => {
+        // Move approved events to upcoming_event
+        if (event.status.toLowerCase() === 'approved') {
+          const { data: eventData, error: fetchError } = await supabase1
+            .from('events')
+            .select('*')
+            .eq('id', event.id)
+            .single();
+    
+          if (fetchError) {
+            console.error('Failed to fetch event details:', fetchError);
+          } else {
+            const { error: insertError } = await supabase1
+              .from('upcoming_event')
+              .insert({
+                name: eventData.event_name,
+                description: eventData.event_description,
+                eventDate: eventData.event_date,
+                venue: eventData.venue,
+                registration_link: eventData.form_link,
+                photo_url: eventData.poster_link
+              });
+    
+            if (insertError) {
+              console.error('Failed to move event to upcoming_event:', insertError);
+            } else {
+              console.log(`Event '${eventData.event_name}' moved to upcoming_event.`);
+            }
+          }
+        }
+    
+        return `
+          <div style="border: 1px solid #ccc; border-radius: 8px; padding: 10px; margin-bottom: 10px;">
+            <h3>${event.event_name} ${emojiMap[event.status] || ''}</h3>
+            <p><strong>Type:</strong> ${event.event_type}</p>
+            <p><strong>Date:</strong> ${event.event_date}</p>
+            <p><strong>Status:</strong> ${event.status.toUpperCase()}</p>
+            <p><strong>Description:</strong> ${event.event_description}</p>
+            <p><strong>Venue:</strong> ${event.venue}</p>
+            <p><a href="${event.form_link}" target="_blank">Registration Form</a></p>
+            <p><a href="${event.poster_link}" target="_blank">Poster/Link</a></p>
+          </div>
+        `;
+      }));
+    
+      document.getElementById('eventList').innerHTML = listHtml.join('');
+      document.getElementById('requestSection').style.display = 'block';
+    }
+    
+  
+    // Call function when page loads
+    window.addEventListener('DOMContentLoaded', fetchEventRequests);
+    function renderBookings() {
+      const list = document.getElementById('bookingList');
+      list.innerHTML = '';
+      bookings.forEach(b => {
+        const div = document.createElement('div');
+        div.className = 'booking-card';
+        div.innerHTML = `<strong>${b.title}</strong><br>
+                         Date: ${b.date}<br>
+                         Time: ${b.start} - ${b.end}<br>
+                         Venue: ${b.venue}<br>
+                         Approved by: ${b.approved}<br>
+                         SAC Screenshot:<br>
+                         <img src="${b.screenshot}" alt="Approval Screenshot">`;
+        list.appendChild(div);
+      });
+    }
+
+    async function fetchPendingUsers() {
+      const { data, error } = await supabase1
+        .from('users')
+        .select('*')
+        .eq('status', 'pending');
+
+      if (error) {
+        alert('Error fetching users: ' + error.message);
+        return;
+      }
+
+      const container = document.getElementById('pending-users');
+      container.innerHTML = '';
+
+      data.forEach(user => {
+        const card = document.createElement('div');
+        card.className = 'user-card';
+        card.innerHTML = `
+          <p><strong>Email:</strong> ${user.email}</p>
+          <p><strong>Role:</strong> ${user.role}</p>
+          <p><strong>Year:</strong> ${user.year}</p>
+          <p><strong>Club:</strong> ${user.club_name}</p>
+          <div class="actions">
+            <button class="approve" onclick="approveUser('${user.email}')">Approve</button>
+            <button class="reject" onclick="rejectUser('${user.email}')">Reject</button>
+            <button class="admin" onclick="approveAsAdmin('${user.email}')">Approve as Admin</button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    async function approveUser(email) {
+      await supabase1
+        .from('users')
+        .update({ status: 'approved' })
+        .eq('email', email);
+      alert(`${email} approved.`);
+      fetchPendingUsers();
+    }
+
+    async function approveAsAdmin(email) {
+      await supabase1
+        .from('users')
+        .update({ status: 'approved', role: 'president' })
+        .eq('email', email);
+      alert(`${email} approved as admin.`);
+      fetchPendingUsers();
+    }
+
+    async function rejectUser(email) {
+      await supabase1
+        .from('users')
+        .delete()
+        .eq('email', email);
+      alert(`${email} rejected and removed.`);
+      fetchPendingUsers();
+    }
+
+    async function logout() {
+      await supabase1.auth.signOut();
+      window.location.href = 'login.html';
+    }
+
+    fetchPendingUsers();
+
+    async function handleBookingSubmit(event) {
+      event.preventDefault();
+    
+      const title = document.getElementById('title').value;
+      const requested_date = document.getElementById('requested_date').value;
+      const venue = document.getElementById('venue').value;
+      const club_name_var = document.getElementById('club_name_var').value;
+      const requestedAt = new Date().toISOString();
+    
+      // Assume this is a checkbox or toggle for selecting Morning or Afternoon
+      const m_or_a = document.getElementById('m_or_a').checked; // true = Morning, false = Afternoon
+    
+      const { error } = await supabase1.from('bookings').insert([{
+        title,
+        requested_date,
+        venue,
+        club_name: club_name_var,
+        status: 'pending',
+        requested_at: requestedAt,
+        m_or_a,
+        approved_by: null, // Initially null
+        approved_at: null  // Initially null
+      }]);
+    
+      if (error) {
+        alert('Error saving booking: ' + error.message);
+      } else {
+        alert('Booking request submitted!');
+        event.target.reset();
+        fetchAndRenderBookings(); // your function to refresh bookings UI
+      }
+    }
+    
+    
+    async function fetchAndRenderBookings() {
+      const { data, error } = await supabase1
+        .from('bookings')
+        .select('*')
+        .order('requested_at', { ascending: false });
+    
+      const container = document.getElementById('bookingsContainer');
+      container.innerHTML = ''; // Clear previous entries
+    
+      if (error) {
+        container.innerHTML = `<p>Error loading bookings: ${error.message}</p>`;
+        return;
+      }
+    
+      const rejectedGroup = document.createElement('div');
+      rejectedGroup.className = 'request-group rejected';
+      const expiredGroup = document.createElement('div');
+      expiredGroup.className = 'request-group expired';
+    
+      let hasRejected = false;
+      let hasExpired = false;
+    
+      data.forEach((booking) => {
+        const {
+          id,
+          club_name,
+          title,
+          requested_date,
+          requested_at,
+          approved_at,
+          venue,
+          m_or_a, // assuming this is "Morning" or "Afternoon"
+          status
+        } = booking;
+    
+        const formattedDate = new Date(requested_date).toLocaleDateString('en-US', {
+          month: 'short', day: 'numeric', year: 'numeric'
+        });
+    
+        const requestedTime = new Date(requested_at).toLocaleString('en-GB').replace(',', '');
+    
+        const card = document.createElement('div');
+        card.className = 'request-card';
+    
+        const venueLine = `📍 ${venue}`;
+        const slotLine = slot ? `🕓 ${slot} slot` : '';
+        const statusLower = status.toLowerCase();
+    
+        async function retrieveBooking(bookingId) {
+          const confirmed = confirm("Are you sure you want to retrieve this request?");
+          if (!confirmed) return;
+        
+          const { error } = await supabase1
+            .from('bookings')
+            .update({ status: 'retrieved' })
+            .eq('id', bookingId);
+        
+          if (error) {
+            alert('Error retrieving booking: ' + error.message);
+          } else {
+            alert('Booking request retrieved.');
+            fetchAndRenderBookings();
+          }
+        }
+        if (statusLower === 'pending') {
+          card.innerHTML = `
+            <strong>${club_name}</strong><br>
+            📅 ${formattedDate} - ${slotLine}<br>
+            ${venueLine}<br>
+            ⏱️ Requested: ${requestedTime}<br>
+            ⏳ <em>Pending</em><br>
+            <button class="retrieve-btn" data-id="${id}">🗑️ Retrieve</button>
+
+          `;
+          container.appendChild(card);
+          document.querySelectorAll('.retrieve-btn').forEach(button => {
+            button.addEventListener('click', () => {
+              const bookingId = button.getAttribute('data-id');
+              retrieveBooking(bookingId);
+            });
+          });
+          
+        } else if (statusLower === 'approved') {
+          const approvedTime = approved_at
+            ? new Date(approved_at).toLocaleString('en-GB').replace(',', '')
+            : '—';
+          card.innerHTML = `
+            <strong>${club_name}</strong><br>
+            📅 ${formattedDate} - ${slotLine}<br>
+            ${venueLine}<br>
+            ⏱️ Requested: ${requestedTime}<br>
+            🟢 Approved: ${approvedTime}<br>
+            <button onclick="retrieveBooking('${id}')">🗑️ Retrieve</button>
+          `;
+          container.appendChild(card);
+        } else if (statusLower === 'rejected') {
+          if (!hasRejected) {
+            const header = document.createElement('h3');
+            header.textContent = '❌ Rejected';
+            rejectedGroup.appendChild(header);
+            hasRejected = true;
+          }
+          const miniCard = document.createElement('div');
+          miniCard.className = 'request-card';
+          miniCard.textContent = `${club_name} - ${formattedDate} at ${venue}`;
+          rejectedGroup.appendChild(miniCard);
+        } else if (statusLower === 'expired') {
+          if (!hasExpired) {
+            const header = document.createElement('h3');
+            header.textContent = '⌛ Expired';
+            expiredGroup.appendChild(header);
+            hasExpired = true;
+          }
+          const miniCard = document.createElement('div');
+          miniCard.className = 'request-card';
+          miniCard.textContent = `${club_name} - ${formattedDate} at ${venue}`;
+          expiredGroup.appendChild(miniCard);
+        }
+      });
+    
+      if (hasRejected) container.appendChild(rejectedGroup);
+      if (hasExpired) container.appendChild(expiredGroup);
+    }
+    
+    fetchAndRenderBookings();
+
+    
+  </script>
+</body>
+</html>

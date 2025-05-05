@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ClubEase - Member Home</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f0fff0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+    h1 {
+      color: #2e8b57;
+    }
+    p {
+      font-size: 18px;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background-color: #ff4d4d;
+      color: white;
+      border: none;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    button:hover {
+      background-color: #e60000;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Welcome to ClubEase 🎉</h1>
+  <p>You are logged in as a club member.</p>
+  <button onclick="logout()">Logout</button>
+
+  <!-- Supabase Script -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script>
+    const supabase1 = supabase.createClient(
+      'https://iwljoaqkdccamkrmexnq.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3bGpvYXFrZGNjYW1rcm1leG5xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM4NjExNjEsImV4cCI6MjA1OTQzNzE2MX0.Me8m_zbDoClF_iq4WPW8DVE_OKkTyhdnttys1L2ibZI'
+    );
+
+    async function logout() {
+      await supabase1.auth.signOut();
+      window.location.href = "login.html";
+    }
+  </script>
+</body>
+</html>

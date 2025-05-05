@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>SAC Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f9ff;
+      margin: 0;
+      padding: 20px;
+    }
+    .dashboard-header {
+      font-size: 24px;
+      font-weight: bold;
+    }
+    .dashboard-subtext {
+      font-size: 14px;
+      color: #555;
+      margin-bottom: 20px;
+    }
+    .cards {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      flex: 1;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all 0.2s;
+    }
+    .card:hover {
+      background: #eef5ff;
+      border-color: #468ef7;
+    }
+    .tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .tab {
+      padding: 10px 16px;
+      border: none;
+      background-color: #eee;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .tab.active {
+      background-color: #ddd;
+      font-weight: bold;
+    }
+    .content {
+      padding: 20px;
+      background: white;
+      border-radius: 10px;
+    }
+    .club-card {
+      border-radius: 10px;
+      background: #2b6cb0;
+      color: white;
+      padding: 15px;
+      margin-bottom: 10px;
+    }
+    .club-description {
+      background: white;
+      color: black;
+      padding: 10px;
+      border-radius: 0 0 10px 10px;
+    }
+    .status {
+      margin-top: 5px;
+      font-size: 12px;
+      padding: 4px 8px;
+      background: green;
+      color: white;
+      display: inline-block;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+
+
+  <div class="dashboard-header">SAC Dashboard</div>
+  <div class="dashboard-subtext">Monitor and manage all campus activities</div>
+
+
+  <!-- Top Cards -->
+  <div class="cards" >
+    <div class="card" onclick="showTab('clubs')">
+      <p>Total Clubs</p>
+      <h2  id="total-clubs-count" >-1</h2>
+    </div>
+    <div class="card"  onclick="showTab('pendingEvents')">
+      <p>Pending Event Requests</p>
+      <h2 id="pending-events-count">-1</h2>
+    </div>
+    <div class="card" onclick="showTab('pendingBookings')">
+      <p>Pending Bookings</p>
+      <h2  id="pending-bookings-count">-1</h2>
+    </div>
+    <div class="card"  onclick="showTab('upcomingEvents')">
+      <p>Upcomming Events</p>
+      <h2 id="upcoming-events-count">-1</h2>
+
+    </div>
+  </div>
+<!-- 
+  <div id="counts-section">
+    <p>Total Clubs: <span id="total-clubs-count">0</span></p>
+    <p>Pending Event Requests: <span id="pending-events-count">0</span></p>
+    <p>Pending Bookings: <span id="pending-bookings-count">0</span></p>
+    <p>Upcoming Events: <span id="upcoming-events-count">0</span></p>
+  </div> -->
+  
+  <!-- Filter Tabs (optional) -->
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('clubs')">Clubs</button>
+    <button class="tab" onclick="showTab('pendingEvents')">Event Requests</button>
+    <button class="tab" onclick="showTab('pendingBookings')">Auditorium Bookings</button>
+    <button class="tab" onclick="showTab('upcomingEvents')">Upcoming Events</button>
+  </div>
+
+
+  <!-- Content Area -->
+  <div class="content" id="content-area">
+
+    <div id="clubs-section"></div>
+
+
+    <div id="pendingEvents-section" style="display: none;"></div>
+
+
+    <div id="pendingBookings-section" style="display: none;">
+    </div>
+
+    <div id="upcomingEvents-section" style="display: none;">
+      <h2>Upcoming Events</h2>
+      <div id="upcomingEventsCount"></div>
+      <!-- The event cards will be appended here -->
+    </div>
+    
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+  <!-- JS for Switching Tabs -->
+  <script>
+
+    
+    const SUPABASE_URL = 'https://iwljoaqkdccamkrmexnq.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3bGpvYXFrZGNjYW1rcm1leG5xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM4NjExNjEsImV4cCI6MjA1OTQzNzE2MX0.Me8m_zbDoClF_iq4WPW8DVE_OKkTyhdnttys1L2ibZI';
+    const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    async function loadClubs() {
+      const { data, error } = await client.from('clubs').select('*');
+      const container = document.getElementById('clubs-section');
+      container.innerHTML = '';
+  
+      if (error) {
+        container.innerHTML = `<p>Error loading clubs: ${error.message}</p>`;
+        return;
+      }
+  
+      data.forEach(club => {
+        const card = document.createElement('div');
+        card.innerHTML = `
+        <div class="club-card">${club.name}</div>
+
+          <div class="club-description">${club.description}`;
+        container.appendChild(card);
+      });
+    }
+
+    async function loadCounts() {
+        // Total Clubs
+        const { data: clubs, error: clubsError } = await client.from('clubs').select('id');
+        if (!clubsError) {
+          document.getElementById('total-clubs-count').textContent = clubs.length;
+        }
+      
+        // Pending Event Requests
+        const { data: pendingEvents, error: eventsError } = await client.from('events').select('id').eq('status', 'pending');
+        if (!eventsError) {
+          document.getElementById('pending-events-count').textContent = pendingEvents.length;
+        }
+      
+        // Pending Bookings
+        const { data: pendingBookings, error: bookingsError } = await client.from('bookings').select('id').eq('status', 'pending');
+        if (!bookingsError) {
+          document.getElementById('pending-bookings-count').textContent = pendingBookings.length;
+        }
+      
+        // Upcoming Events (already filtered in your other function, but duplicating for count here)
+        const today = new Date().toISOString().split('T')[0];
+        const { data: upcomingEvents, error: upcomingError } = await client
+          .from('upcoming_event')
+          .select('id')
+          .eq('status', 'approved')
+          .gte('event_date', today);
+      
+        if (!upcomingError) {
+          document.getElementById('upcoming-events-count').textContent = upcomingEvents.length;
+        }
+      }
+      
+    async function loadPendingBookings() {
+        const { data, error } = await client.from('bookings').select('*').eq('status', 'pending');
+        const container = document.getElementById('pendingBookings-section');
+        container.innerHTML = '';
+      
+        if (error || !data.length) {
+          container.innerHTML = `<h3>No auditorium bookings</h3><p>There are no auditorium bookings to review at this time.</p>`;
+          return;
+        }
+      
+        data.forEach(booking => {
+          const card = document.createElement('div');
+          card.className = 'request-card';
+          card.innerHTML = `
+            <strong>${booking.title}</strong><br>
+            <p><b>Club:</b> ${booking.club_name}</p>
+            <p><b>Date:</b> ${booking.requested_date}</p>
+            <p><b>Venue:</b> ${booking.venue}</p>
+            <p><b>Session:</b> ${booking.m_or_a ? 'Morning' : 'Afternoon'}</p>
+            <div class="action-buttons">
+              <button class="approve-btn" onclick="approveBooking('${booking.id}')">Approve</button>
+              <button class="reject-btn" onclick="rejectBooking('${booking.id}')">Reject</button>
+            </div>`;
+          container.appendChild(card);
+        });
+      }
+      async function approveBooking(bookingId) {
+  const approvedBy = 'SAC Admin'; // Replace with dynamic value if needed
+  const approvedAt = new Date().toISOString();
+
+  const { error } = await client
+    .from('bookings')
+    .update({ status: 'approved', approved_by: approvedBy, approved_at: approvedAt })
+    .eq('id', bookingId);
+
+  if (error) {
+    alert('Failed to approve booking: ' + error.message);
+  } else {
+    alert('Booking approved successfully.');
+    loadPendingBookings();
+  }
+}
+async function rejectBooking(bookingId) {
+    const { error } = await client
+      .from('bookings')
+      .update({ status: 'rejected' })
+      .eq('id', bookingId);
+  
+    if (error) {
+      alert('Failed to reject booking: ' + error.message);
+    } else {
+      alert('Booking rejected.');
+      loadPendingBookings();
+    }
+  }
+  
+    async function loadPendingEvents() {
+      const { data, error } = await client.from('events').select('*').eq('status', 'pending');
+      const container = document.getElementById('pendingEvents-section');
+      container.innerHTML = '';
+  
+      if (error || !data.length) {
+        container.innerHTML = `<h3>No pending event requests</h3>`;
+        return;
+      }
+  
+      data.forEach(event => {
+        const card = document.createElement('div');
+        card.className = 'request-card';
+        card.innerHTML = `
+          <strong>${event.event_name}</strong>
+          <h2>Host: ${event.club_name}</h2>
+          <br>${event.event_date} - ${event.venue}<br>
+          <h3>${event.event_description}</h3>
+          <h4>Required: ${event.resources}</h4>
+          <div class="action-buttons">
+            <button class="approve-btn" onclick="approveEvent('${event.id}')">Approve</button>
+            <button class="reject-btn" onclick="rejectEvent('${event.id}')">Reject</button>
+          </div>`;
+        container.appendChild(card);
+      });
+    }
+  
+    async function approveEvent(eventId) {
+      const { data: eventData, error: fetchError } = await client.from('events').select('*').eq('id', eventId).single();
+      if (fetchError) return console.error('Fetch failed:', fetchError);
+  
+      await client.from('events').update({ status: 'approved' }).eq('id', eventId);
+  
+      const { error: insertError } = await client.from('upcoming_event').insert({
+        name: eventData.name,
+        description: eventData.description,
+        date: eventData.date,
+        venue: eventData.venue,
+        registration_link: eventData.registration_link,
+        photo_url: eventData.photo_url
+      });
+  
+      if (insertError) console.error('Insert error:', insertError);
+      else console.log('Event approved and added.');
+  
+      loadPendingEvents();
+      loadUpcomingEvents();
+    }
+  
+    async function rejectEvent(eventId) {
+      await client.from('events').update({ status: 'rejected' }).eq('id', eventId);
+      loadPendingEvents();
+    }
+
+
+
+    async function loadUpcomingEvents() {
+      const { data, error } = await client.from('upcoming_event').select('*');
+      const container = document.getElementById('upcomingEvents-section');
+      const countDisplay = document.getElementById('upcomingEventsCount');
+      
+      container.innerHTML = '';
+  
+      if (error || !data || data.length === 0) {
+        container.innerHTML = `<h3>No upcoming events found</h3>`;
+        countDisplay.textContent = 'Total Events: 0';
+        return;
+      }
+  
+      // Display the count
+      countDisplay.textContent = `Total Events: ${data.length}`;
+      document.getElementById('upcoming-events-count').textContent = data.length;
+
+      // Display each event
+      data.forEach(event => {
+        const card = document.createElement('div');
+        card.className = 'club-card';
+        card.innerHTML = `
+          <strong>${event.name}</strong><br>
+          ${event.date} - ${event.venue}<br>
+          <a href="${event.registration_link}" target="_blank">Register</a>`;
+        container.appendChild(card);
+      });
+    }
+
+
+
+
+
+
+    document.addEventListener('DOMContentLoaded', () => {
+        loadCounts(); // Add this
+
+      loadClubs();
+      loadPendingEvents();
+      loadUpcomingEvents();
+      loadPendingBookings(); // Add this line
+
+    });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    function showTab(tab) {
+      // Hide all
+      document.getElementById('clubs-section').style.display = 'none';
+      document.getElementById('pendingEvents-section').style.display = 'none';
+      document.getElementById('pendingBookings-section').style.display = 'none';
+      document.getElementById('upcomingEvents-section').style.display = 'none';
+
+
+      // Remove active class from tabs
+      var tabs = document.getElementsByClassName('tab');
+      for (let t of tabs) t.classList.remove('active');
+
+
+      // Show selected
+      document.getElementById(tab + '-section').style.display = 'block';
+
+
+      // Add active class to correct tab
+      if (tab === 'clubs') tabs[0].classList.add('active');
+      if (tab === 'pendingEvents') tabs[1].classList.add('active');
+      if (tab === 'pendingBookings') tabs[2].classList.add('active');
+      if (tab === 'upcomingEvents') tabs[3].classList.add('active');
+    }
+  </script>
+</body>
+</html>
+
+
+
+
+

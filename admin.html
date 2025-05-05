@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel - Booking Requests</title>
+  <style>
+    .request-card {
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin: 10px 0;
+      background: #f9f9f9;
+      border-radius: 6px;
+    }
+    .action-buttons button {
+      margin-right: 10px;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .approve-btn {
+      background-color: #4CAF50;
+      color: white;
+    }
+    .reject-btn {
+      background-color: #f44336;
+      color: white;
+    }
+    .request-group h3 {
+      margin-bottom: 5px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Booking Requests</h1>
+  <div id="pendingRequestsContainer"></div>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script>
+    // Initialize Supabase client (with your credentials)
+    const supabaseClient = supabase.createClient(
+      'https://iwljoaqkdccamkrmexnq.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3bGpvYXFrZGNjYW1rcm1leG5xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM4NjExNjEsImV4cCI6MjA1OTQzNzE2MX0.Me8m_zbDoClF_iq4WPW8DVE_OKkTyhdnttys1L2ibZI'
+    );
+    
+
+    // Fetch and display pending bookings
+    async function fetchPendingBookings() {
+      const { data, error } = await supabaseClient
+        .from('bookings')
+        .select('*')
+        .eq('status', 'pending')
+        .order('requested_at', { ascending: false });
+
+      const container = document.getElementById('pendingRequestsContainer');
+      container.innerHTML = ''; // Clear previous content
+
+      if (error) {
+        container.innerHTML = `<p>Error loading bookings: ${error.message}</p>`;
+        return;
+      }
+
+      data.forEach((booking) => {
+        const { id, club_name, requested_date, venue, status, requested_at } = booking;
+
+        const formattedDate = new Date(requested_date).toLocaleDateString('en-US', {
+          month: 'short', day: 'numeric', year: 'numeric'
+        });
+
+        const requestedTime = new Date(requested_at).toLocaleString('en-GB').replace(',', '');
+
+        const card = document.createElement('div');
+        card.className = 'request-card';
+
+        card.innerHTML = `
+          <strong>${club_name}</strong><br>
+          📅 ${formattedDate} - ${venue}<br>
+          ⏱️ Requested: ${requestedTime}<br>
+          ⏳ <em>${status}</em><br>
+          <div class="action-buttons">
+            <button class="approve-btn" onclick="approveRequest('${id}')">Approve</button>
+            <button class="reject-btn" onclick="rejectRequest('${id}')">Reject</button>
+          </div>
+        `;
+
+        container.appendChild(card);
+      });
+    }
+
+    // Approve booking request
+    async function approveRequest(bookingId) {
+      const { error } = await supabaseClient
+        .from('bookings')
+        .update({ status: 'approved', approved_at: new Date().toISOString() })
+        .eq('id', bookingId);
+
+      if (error) {
+        alert('Error approving booking: ' + error.message);
+      } else {
+        alert('Booking request approved.');
+        fetchPendingBookings(); // Reload the bookings list
+      }
+    }
+
+    // Reject booking request
+    async function rejectRequest(bookingId) {
+      const { error } = await supabaseClient
+        .from('bookings')
+        .update({ status: 'rejected' })
+        .eq('id', bookingId);
+
+      if (error) {
+        alert('Error rejecting booking: ' + error.message);
+      } else {
+        alert('Booking request rejected.');
+        fetchPendingBookings(); // Reload the bookings list
+      }
+    }
+
+    // Load pending bookings when the page loads
+    window.addEventListener('DOMContentLoaded', fetchPendingBookings);
+  </script>
+</body>
+</html>

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Event Submit & Status</title>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: Arial; background: #f4f4f4; padding: 20px; }
+    form, .events { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
+    input, textarea, select { width: 100%; padding: 10px; margin-top: 10px; }
+    button { padding: 10px 20px; background: #007bff; color: white; border: none; margin-top: 10px; cursor: pointer; }
+    .event-card { border-bottom: 1px solid #ddd; padding: 10px 0; }
+    .status { font-weight: bold; color: green; }
+  </style>
+</head>
+<body>
+
+  <h2>Submit Event</h2>
+  <form id="eventForm">
+    <input type="text" id="event_id" placeholder="Event ID" required>
+    <input type="text" id="eventHost" placeholder="Club Name" required>
+    <input type="file" id="photo" required>
+    <input type="text" id="name" placeholder="Event Name" required>
+    <input type="text" id="venue" placeholder="Venue" required>
+    <textarea id="description" placeholder="Description" required></textarea>
+    <input type="url" id="registration_link" placeholder="Registration Link" required>
+    <textarea id="requiredResources" placeholder="Resources Needed" required></textarea>
+    <input type="number" id="expectedParticipants" placeholder="Expected Participants" required>
+    <input type="text" id="eventType" placeholder="Event Type" required>
+    <input type="date" id="eventDate" required>
+    <button type="submit">Submit Event</button>
+  </form>
+
+  <h2>My Club Events</h2>
+  <input type="text" id="clubSearch" placeholder="Enter your club name" oninput="loadEvents()">
+  <div class="events" id="eventsList">No events yet.</div>
+
+  <script>
+    const SUPABASE_URL = "https://iwljoaqkdccamkrmexnq.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3bGpvYXFrZGNjYW1rcm1leG5xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM4NjExNjEsImV4cCI6MjA1OTQzNzE2MX0.Me8m_zbDoClF_iq4WPW8DVE_OKkTyhdnttys1L2ibZI";
+    const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dlxmniiq0/image/upload";
+    const CLOUDINARY_PRESET = "ml_default";
+
+    document.getElementById("eventForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+      const file = document.getElementById("photo").files[0];
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("upload_preset", CLOUDINARY_PRESET);
+
+      let imageUrl = "";
+      try {
+        const cloudRes = await fetch(CLOUDINARY_URL, { method: "POST", body: fd });
+        const cloudData = await cloudRes.json();
+        imageUrl = cloudData.secure_url;
+      } catch {
+        alert("Cloudinary upload failed.");
+        return;
+      }
+
+      const data = {
+        event_id: document.getElementById("event_id").value,
+        eventHost: document.getElementById("eventHost").value,
+        photo_url: imageUrl,
+        name: document.getElementById("name").value,
+        venue: document.getElementById("venue").value,
+        description: document.getElementById("description").value,
+        registration_link: document.getElementById("registration_link").value,
+        requiredResources: document.getElementById("requiredResources").value,
+        eventApproved: false,
+        venueApproved: false,
+        expectedParticipants: parseInt(document.getElementById("expectedParticipants").value),
+        eventType: document.getElementById("eventType").value,
+        eventDate: document.getElementById("eventDate").value
+      };
+
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/upcoming_event`, {
+        method: "POST",
+        headers: {
+          apikey: SUPABASE_KEY,
+          Authorization: `Bearer ${SUPABASE_KEY}`,
+          "Content-Type": "application/json",
+          Prefer: "return=representation"
+        },
+        body: JSON.stringify(data)
+      });
+
+      if (res.ok) {
+        alert("Event Submitted!");
+        loadEvents();
+      } else {
+        alert("Failed to submit.");
+      }
+    });
+
+    async function loadEvents() {
+      const club = document.getElementById("clubSearch").value;
+      if (!club) return;
+
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/upcoming_event?eventHost=eq.${club}&select=*`, {
+        headers: {
+          apikey: SUPABASE_KEY,
+          Authorization: `Bearer ${SUPABASE_KEY}`
+        }
+      });
+
+      const data = await res.json();
+      const list = document.getElementById("eventsList");
+      const today = new Date().toISOString().split("T")[0];
+      list.innerHTML = "";
+
+      if (data.length === 0) {
+        list.innerHTML = "No events found.";
+        return;
+      }
+
+      data.forEach(ev => {
+        let status = "Approved";
+        if (!ev.venueApproved) status = "Pending Venue";
+        else if (!ev.eventApproved) status = "Pending Approval";
+        else if (ev.eventDate === today) status = "Ongoing";
+        else if (ev.eventDate < today) status = "Finished";
+
+        list.innerHTML += `
+          <div class="event-card">
+            <strong>${ev.name}</strong> (${ev.eventType}) - <span class="status">${status}</span><br>
+            <small>${ev.description}</small><br>
+            <a href="${ev.registration_link}" target="_blank">Register</a> |
+            ${ev.expectedParticipants} participants
+          </div>
+        `;
+      });
+    }
+  </script>
+</body>
+</html>
