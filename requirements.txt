@@ -1,7 +1,1 @@
-flask
-pandas
-google-generativeai
-reportlab
-openpyxl
-genai
-gunicorn
+
